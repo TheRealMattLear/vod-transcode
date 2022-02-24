@@ -27,7 +27,7 @@ class TranscodeJob implements ShouldQueue
     public function handle()
     {
         Log::info('Downloading file');
-        $file = Storage::put($this->file, Storage::cloud()->get('07fe2889-2454-4dbb-9032-6d01bf137071/8ec1a0c8-8906-407d-9316-cbd92af85590/media/wZQRzhoFn5DS1yfRrTq1VWNuM3EKohKe9mznhb4I.mp4'));
+        $file = Storage::put($this->file, Storage::cloud()->get("/tmp/{$this->file}"));
         Log::info('File downloaded successfully, processing...');
 
         $file = FFMpeg::open($this->file);
@@ -38,11 +38,11 @@ class TranscodeJob implements ShouldQueue
 
         $file->export()
             ->inFormat($bitrateFormat)
-            ->toDisk('cloud')
+            ->toDisk('s3')
             ->save("processed/{$this->file}");
 
         Log::info('Processing completed');
 
-        \HttpRequest::get($this->notify);
+        Http::get($this->notify);
     }
 }
