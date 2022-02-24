@@ -21,7 +21,7 @@ class TranscodeController extends Controller
 
         # TODO: Validate path exists or throw error
 
-        TranscodeJob::dispatch($request->input('file'), $request->input('notify'));
+        TranscodeJob::dispatch($request->input('file'), $request->input('output'), $request->input('notify'));
 
         return response()->json(['ok']);
     }
