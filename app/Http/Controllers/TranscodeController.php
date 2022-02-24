@@ -3,11 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\TranscodeJob;
-use FFMpeg\Format\Video\X264;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Storage;
-use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class TranscodeController extends Controller
 {
@@ -15,13 +11,19 @@ class TranscodeController extends Controller
     {
         $validated = $request->validate([
             'file' => 'required|string',
-            'notify' => 'required|string|url',
+            'notify' => 'string|url',
+            'bitrate' => 'int',
             'output' => 'required|string'
         ]);
 
         # TODO: Validate path exists or throw error
 
-        TranscodeJob::dispatch($request->input('file'), $request->input('output'), $request->input('notify'));
+        TranscodeJob::dispatch(
+            $request->input('file'),
+            $request->input('output'),
+            $request->input('bitrate'),
+            $request->input('notify')
+        );
 
         return response()->json(['ok']);
     }
