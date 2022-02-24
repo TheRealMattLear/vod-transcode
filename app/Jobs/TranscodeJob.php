@@ -18,6 +18,7 @@ class TranscodeJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     protected string $file;
+    protected string $notify;
 
     public function __construct($file,$notify)
     {
