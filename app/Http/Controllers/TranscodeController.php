@@ -16,6 +16,7 @@ class TranscodeController extends Controller
         $validated = $request->validate([
             'file' => 'required|string',
             'notify' => 'required|string|url',
+            'output' => 'required|string'
         ]);
 
         # TODO: Validate path exists or throw error
