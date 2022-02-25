@@ -83,12 +83,13 @@ class TranscodeJob implements ShouldQueue
 
         if ( !empty($this->notify) )
             Log::info('POST notification to ' . $this->notify);
-            Http::timeout(10)->post($this->notify,[
+            $request = Http::timeout(10)->post($this->notify,[
                 'width'    => $videoDimensions->getWidth(),
                 'height'   => $videoDimensions->getHeight(),
                 'duration' => $file->getDurationInSeconds(),
                 'size'     => Storage::size($tmpName),
             ]);
+            Log::info("POST response code {$request->status()} : {$request->body()}");
     }
     public function fail($exception = null)
     {
