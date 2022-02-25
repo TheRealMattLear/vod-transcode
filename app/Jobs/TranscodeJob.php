@@ -11,6 +11,7 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
 class TranscodeJob implements ShouldQueue
@@ -32,7 +33,7 @@ class TranscodeJob implements ShouldQueue
 
     public function handle()
     {
-        Log::info('Downloading file');
+        Log::info("Downloading file from s3://{$this->file}");
         Storage::writeStream($this->file, Storage::cloud()->readStream("/tmp/{$this->file}"));
         Log::info('File downloaded successfully, processing...');
 
@@ -55,17 +56,29 @@ class TranscodeJob implements ShouldQueue
             ->setKiloBitrate(0) # Set bitrate to 0 to disable constant bitrate and use vbr for faster process
             ->setPasses(1); # setPasses to process fast and not concern ourselves much with accurate bitrate
 
-        $file->export()
-            ->inFormat($bitrateFormat)
-            ->toDisk('s3')
-            ->save($this->output);
-
+        # Process to disk locally so that we can get file statistics to send back to notify url
+        $tmpName = Str::random(40) . '.mp4';
+        $file->export()->inFormat($bitrateFormat)->save($tmpName);
         Log::info('Processing completed');
 
-        Storage::delete($this->file); // Cleanup local file
-        //Storage::cloud()->delete($this->file); // Cleanup unprocessed file (we'll let mediacp cloud do this for now)
+        $transcodedFile = FFMpeg::open($tmpName);
+        $videoDimensions = $transcodedFile->getVideoStream()->getDimensions();
 
-        if ( !empty($this->notify) ) Http::timeout(10)->get($this->notify);
+        Log::info("Uploading processed file to s3://{$this->output}");
+        Storage::cloud()->writeStream($this->output, Storage::readStream($tmpName));
+        Log::info('Uploading complete');
+
+        Storage::delete($this->file); // Cleanup local file to avoid disk build up of temp files
+        Storage::cloud()->delete("/tmp/{$this->file}"); // Cleanup original tmp uploaded file
+
+        if ( !empty($this->notify) )
+            Log::info('POST notification to ' . $this->notify);
+            Http::timeout(10)->post($this->notify,[
+                'width'    => $videoDimensions->getWidth(),
+                'height'   => $videoDimensions->getHeight(),
+                'duration' => $file->getDurationInSeconds(),
+                'size'     => Storage::size($tmpName),
+            ]);
     }
     public function fail($exception = null)
     {
