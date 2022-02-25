@@ -97,6 +97,8 @@ class TranscodeJob implements ShouldQueue
             ]);
             Log::info("POST response code {$request->status()} : {$request->body()}");
         }
+
+        Log::info("TranscodeJob Completed.");
     }
     public function fail($exception = null)
     {
