@@ -62,9 +62,9 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
         if ($bitrateOptimal == 0 || $bitrateOptimal > $this->bitrate) {
             $bitrateOptimal = $this->bitrate;
         }
-        $bitrateMin = (int)($bitrateOptimal * 0.85);
+        $bitrateMin = (int)($bitrateOptimal * 0.75);
         $bitrateMax = (int)($bitrateOptimal * 1.25);
-        $buffSize = 2000;
+        $buffSize = $bitrateOptimal;
 
         $bitrateFormat = (new X264)
             ->setAdditionalParameters([
@@ -75,7 +75,7 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
                 "-bufsize",
                 "{$buffSize}K",
                 "-preset",
-                "ultrafast",
+                "veryfast",
             ])
             ->setKiloBitrate(0) # Set bitrate to 0 to disable constant bitrate and use vbr for faster process
             ->setPasses(1); # setPasses to process fast and not concern ourselves much with accurate bitrate
