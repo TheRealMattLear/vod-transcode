@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use FFMpeg\Format\Video\X264;
 use Illuminate\Bus\Queueable;
+use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -18,6 +19,8 @@ class TranscodeJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
+    public $tries = 1;
+
     protected string $file;
     protected string $output;
     protected string|null $notify;
@@ -29,6 +32,13 @@ class TranscodeJob implements ShouldQueue
         $this->output = $output;
         $this->bitrate = $bitrate;
         $this->notify = $notify;
+    }
+
+    public function middleware()
+    {
+        # immediately delete any overlapping jobs so that they will not be retried
+        # because it is expected for the ffmepg process to take a really long time
+        return [(new WithoutOverlapping($this->file))->dontRelease()];
     }
 
     public function handle()
