@@ -4,6 +4,7 @@ namespace App\Jobs;
 
 use FFMpeg\Format\Video\X264;
 use Illuminate\Bus\Queueable;
+use Illuminate\Contracts\Queue\ShouldBeUnique;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Queue\InteractsWithQueue;
@@ -15,11 +16,13 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use ProtoneMedia\LaravelFFMpeg\Support\FFMpeg;
 
-class TranscodeJob implements ShouldQueue
+class TranscodeJob implements ShouldQueue, ShouldBeUnique
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public $tries = 1;
+    public $timeout = 3600;
+    public $uniqueFor = 3600;
 
     protected string $file;
     protected string $output;
@@ -32,6 +35,11 @@ class TranscodeJob implements ShouldQueue
         $this->output = $output;
         $this->bitrate = $bitrate;
         $this->notify = $notify;
+    }
+
+    public function uniqueId()
+    {
+        return $this->file;
     }
 
     public function middleware()
