@@ -89,13 +89,13 @@ class TranscodeJob implements ShouldQueue
 
         if (!empty($this->notify)) {
             Log::info('POST notification to ' . $this->notify);
-            $request = Http::timeout(10)->post($this->notify, [
+            $response = Http::timeout(10)->post($this->notify, [
                 'width' => $videoDimensions->getWidth(),
                 'height' => $videoDimensions->getHeight(),
                 'duration' => $file->getDurationInSeconds(),
                 'size' => Storage::size($tmpName),
-            ]);
-            Log::info("POST response code {$request->status()} : {$request->body()}");
+            ])->throw();
+            Log::info("POST response code {$response->status()} : {$response->body()}");
         }
 
         Log::info("TranscodeJob Completed.");
@@ -103,5 +103,6 @@ class TranscodeJob implements ShouldQueue
     public function fail($exception = null)
     {
         Storage::delete($this->file); // Cleanup local file
+        Log::error("TranscodeJob Failed." . ($exception ? $exception->getMessage() : ''));
     }
 }
