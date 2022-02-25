@@ -62,23 +62,18 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
         if ($bitrateOptimal == 0 || $bitrateOptimal > $this->bitrate) {
             $bitrateOptimal = $this->bitrate;
         }
-        $bitrateMin = (int)($bitrateOptimal * 0.75);
-        $bitrateMax = (int)($bitrateOptimal * 1.25);
-        $buffSize = $bitrateOptimal;
+
+        $bitrateMax = (int) ($this->bitrate * 1.25); # Allow burst of maximum 25% above input bitrate, doesnt mean it will actually be used
+        $buffSize = $bitrateOptimal; # Target bitrate
 
         $bitrateFormat = (new X264)
-            ->setAdditionalParameters([
-                "-minrate",
-                "{$bitrateMin}K",
-                "-maxrate",
-                "{$bitrateMax}K",
-                "-bufsize",
-                "{$buffSize}K",
-                "-preset",
-                "veryfast",
-            ])
             ->setKiloBitrate(0) # Set bitrate to 0 to disable constant bitrate and use vbr for faster process
-            ->setPasses(1); # setPasses to process fast and not concern ourselves much with accurate bitrate
+            ->setPasses(1) # setPasses to process fast and not concern ourselves much with accurate bitrate
+            ->setAdditionalParameters([
+                "-maxrate", "{$bitrateMax}K",
+                "-bufsize", "{$buffSize}K",
+                "-preset", "fast",
+            ]);
 
         # Process to disk locally so that we can get file statistics to send back to notify url
         $tmpName = Str::random(40) . '.mp4';
