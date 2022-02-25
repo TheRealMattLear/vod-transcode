@@ -51,17 +51,23 @@ class TranscodeJob implements ShouldQueue
 
         # If bitrate >= specified, reduce down; else use original
         $bitrateOptimal = intval($file->getVideoStream()->get('bit_rate')) / 1000;
-        if ( $bitrateOptimal == 0 || $bitrateOptimal > $this->bitrate ) $bitrateOptimal = $this->bitrate;
-        $bitrateMin = (int) ($bitrateOptimal * 0.85);
-        $bitrateMax = (int) ($bitrateOptimal * 1.25);
+        if ($bitrateOptimal == 0 || $bitrateOptimal > $this->bitrate) {
+            $bitrateOptimal = $this->bitrate;
+        }
+        $bitrateMin = (int)($bitrateOptimal * 0.85);
+        $bitrateMax = (int)($bitrateOptimal * 1.25);
         $buffSize = 2000;
 
         $bitrateFormat = (new X264)
             ->setAdditionalParameters([
-                "-minrate", "{$bitrateMin}K",
-                "-maxrate", "{$bitrateMax}K",
-                "-bufsize", "{$buffSize}K",
-                "-preset", "ultrafast",
+                "-minrate",
+                "{$bitrateMin}K",
+                "-maxrate",
+                "{$bitrateMax}K",
+                "-bufsize",
+                "{$buffSize}K",
+                "-preset",
+                "ultrafast",
             ])
             ->setKiloBitrate(0) # Set bitrate to 0 to disable constant bitrate and use vbr for faster process
             ->setPasses(1); # setPasses to process fast and not concern ourselves much with accurate bitrate
@@ -81,15 +87,16 @@ class TranscodeJob implements ShouldQueue
         Storage::delete($this->file); // Cleanup local file to avoid disk build up of temp files
         Storage::cloud()->delete("/tmp/{$this->file}"); // Cleanup original tmp uploaded file
 
-        if ( !empty($this->notify) )
+        if (!empty($this->notify)) {
             Log::info('POST notification to ' . $this->notify);
-            $request = Http::timeout(10)->post($this->notify,[
-                'width'    => $videoDimensions->getWidth(),
-                'height'   => $videoDimensions->getHeight(),
+            $request = Http::timeout(10)->post($this->notify, [
+                'width' => $videoDimensions->getWidth(),
+                'height' => $videoDimensions->getHeight(),
                 'duration' => $file->getDurationInSeconds(),
-                'size'     => Storage::size($tmpName),
+                'size' => Storage::size($tmpName),
             ]);
             Log::info("POST response code {$request->status()} : {$request->body()}");
+        }
     }
     public function fail($exception = null)
     {
