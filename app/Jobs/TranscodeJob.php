@@ -72,7 +72,7 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
             ->setAdditionalParameters([
                 "-maxrate", "{$bitrateMax}K",
                 "-bufsize", "{$buffSize}K",
-                "-preset", "fast",
+                "-preset", "ultrafast",
             ]);
 
         # Process to disk locally so that we can get file statistics to send back to notify url
