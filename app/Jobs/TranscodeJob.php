@@ -23,8 +23,8 @@ class TranscodeJob implements ShouldQueue
 
     protected string $file;
     protected string $output;
-    protected string|null $notify;
     protected int|null $bitrate;
+    protected string|null $notify;
 
     public function __construct($file,$output,$bitrate,$notify)
     {
@@ -50,8 +50,8 @@ class TranscodeJob implements ShouldQueue
         $file = FFMpeg::open($this->file);
 
         # If bitrate >= specified, reduce down; else use original
-        $bitrateOptimal = (int) intval($file->getVideoStream()->get('bit_rate')) / 1000;
-        if ( $bitrateOptimal > $this->bitrate ) $bitrateOptimal = $this->bitrate;
+        $bitrateOptimal = intval($file->getVideoStream()->get('bit_rate')) / 1000;
+        if ( $bitrateOptimal == 0 || $bitrateOptimal > $this->bitrate ) $bitrateOptimal = $this->bitrate;
         $bitrateMin = (int) ($bitrateOptimal * 0.85);
         $bitrateMax = (int) ($bitrateOptimal * 1.25);
         $buffSize = 2000;
