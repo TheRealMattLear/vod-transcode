@@ -24,6 +24,7 @@ class TranscodeController extends Controller
             'output' => 'required|string',
             'bitrate' => 'int',
             'notify' => 'string|url',
+            'transcode' => 'boolean'
         ]);
 
 
