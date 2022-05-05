@@ -125,6 +125,8 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
 
     public function getBitrate($file): bool|string
     {
+        echo $file;
+        echo storage_path('app/check_bitrate.sh') . ' '. $file;
         return system(storage_path('app/check_bitrate.sh') . ' '. $file);
     }
 }
