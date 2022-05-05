@@ -103,8 +103,9 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
         Storage::cloud()->delete("/tmp/{$this->file}"); // Cleanup original tmp uploaded file
 
         if (!empty($this->notify)) {
-            Log::info('POST notification to ' . $this->notify);
             Log::info('File path ' . $tmpName);
+            $this->getBitrate($tmpName);
+            Log::info('POST notification to ' . $this->notify);
             $response = Http::timeout(10)->post($this->notify, [
                 'width'    => $videoDimensions->getWidth(),
                 'height'   => $videoDimensions->getHeight(),
