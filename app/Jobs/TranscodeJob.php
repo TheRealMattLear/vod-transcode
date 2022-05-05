@@ -104,12 +104,13 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
 
         if (!empty($this->notify)) {
             Log::info('POST notification to ' . $this->notify);
+            Log::info('File path ' . $tmpName);
             $response = Http::timeout(10)->post($this->notify, [
                 'width'    => $videoDimensions->getWidth(),
                 'height'   => $videoDimensions->getHeight(),
                 'duration' => $file->getDurationInSeconds(),
                 'size'     => Storage::size($tmpName),
-                'bitrate'  => $this->getBitrate($this->file),
+                'bitrate'  => $this->getBitrate($tmpName),
             ])->throw();
             Log::info("POST response code {$response->status()} : {$response->body()}");
         }
