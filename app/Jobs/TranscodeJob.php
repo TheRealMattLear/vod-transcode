@@ -123,11 +123,8 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
         Log::error("TranscodeJob Failed." . ($exception ? $exception->getMessage() : ''));
     }
 
-    public function getBitrate($file)
+    public function getBitrate($file): bool|string
     {
-        $result = '';
-        system(storage_path('app/check_bitrate.sh') . ' '. $file, $result);
-
-        return $result;
+        return system(storage_path('app/check_bitrate.sh') . ' '. $file);
     }
 }
