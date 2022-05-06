@@ -196,6 +196,14 @@ return [
                 'timeout' => 3600,
             ],
         ],
+        'staging' => [
+            'supervisor-1' => [
+                'maxProcesses' => 1,
+                'balanceMaxShift' => 1,
+                'balanceCooldown' => 1,
+                'timeout' => 3600,
+            ],
+        ],
 
         'local' => [
             'supervisor-1' => [
