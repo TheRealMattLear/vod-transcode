@@ -103,8 +103,6 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
         Storage::cloud()->delete("/tmp/{$this->file}"); // Cleanup original tmp uploaded file
 
         if (!empty($this->notify)) {
-            Log::info('File path ' . $tmpName);
-            $this->getBitrate($tmpName);
             Log::info('POST notification to ' . $this->notify);
             $response = Http::timeout(10)->post($this->notify, [
                 'width'    => $videoDimensions->getWidth(),
@@ -127,8 +125,7 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
 
     public function getBitrate($file): bool|string
     {
-        Log::info('file path ' .$file);
-        Log::info('command '. storage_path('app/check_bitrate.sh') . ' '. $file);
-        return system(storage_path('app/check_bitrate.sh') . ' '. $file);
+        Log::info('command '. storage_path('app/check_bitrate.sh') . ' '. storage_path('app/'.$file));
+        return system(storage_path('app/check_bitrate.sh') . ' '. storage_path('app/'.$file));
     }
 }
