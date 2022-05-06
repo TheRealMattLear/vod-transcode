@@ -24,6 +24,7 @@ class TranscodeController extends Controller
             'output' => 'required|string',
             'bitrate' => 'int',
             'notify' => 'string|url',
+            'transcode' => 'boolean'
         ]);
 
 
@@ -31,7 +32,8 @@ class TranscodeController extends Controller
             $request->input('file'),
             $request->input('output'),
             $request->input('bitrate'),
-            $request->input('notify')
+            $request->input('notify'),
+            $request->input('transcode', false),
         );
 
         return response()->json(['ok']);
