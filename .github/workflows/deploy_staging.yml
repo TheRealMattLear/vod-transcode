@@ -1,8 +1,8 @@
-name: Deploy
+name: Deploy Staging
 
 on:
   push:
-    branches: [ master ]
+    branches: [ staging ]
 
 jobs:
   deploy:
@@ -14,4 +14,4 @@ jobs:
           username: root
           host: 45.79.166.29
           password: ${{ secrets.VOD_SSH_PASSWORD }}
-          script: 'cd /var/www/vod-transcode-master && ./server_deploy.sh'
+          script: 'cd /var/www/vod-transcode-staging && ./server_deploy_staging.sh'
