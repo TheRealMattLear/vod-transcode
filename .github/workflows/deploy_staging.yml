@@ -1,0 +1,17 @@
+name: Deploy Staging
+
+on:
+  push:
+    branches: [ staging ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy to production
+        uses: appleboy/ssh-action@master
+        with:
+          username: root
+          host: 45.79.166.29
+          password: ${{ secrets.VOD_SSH_PASSWORD }}
+          script: 'cd /var/www/vod-transcode-staging && ./server_deploy_staging.sh'
