@@ -33,7 +33,7 @@ class TranscodeController extends Controller
             $request->input('output'),
             $request->input('bitrate'),
             $request->input('notify'),
-            $request->input('transcode', false),
+            $request->input('transcode', true),
         );
 
         return response()->json(['ok']);
