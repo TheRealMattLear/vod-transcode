@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\TranscodeController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -14,9 +15,10 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-
-Route::get('/process', [\App\Http\Controllers\TranscodeController::class,'index']);
-Route::get('/validate', [\App\Http\Controllers\TranscodeController::class,'validate']);
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/process', [TranscodeController::class, 'index']);
+    Route::get('/validate', [TranscodeController::class, 'validate']);
+});
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
