@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/process', [\App\Http\Controllers\TranscodeController::class,'index']);
+Route::get('/reprocess', [\App\Http\Controllers\TranscodeController::class,'reprocess']);
 Route::get('/validate', [\App\Http\Controllers\TranscodeController::class,'validate']);
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {

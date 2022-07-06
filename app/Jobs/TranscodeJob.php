@@ -95,12 +95,16 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
         $transcodedFile = FFMpeg::open($tmpName);
         $videoDimensions = $transcodedFile->getVideoStream()->getDimensions();
 
-        Log::info("Uploading processed file to s3://{$this->output}");
-        Storage::cloud()->writeStream($this->output, Storage::readStream($tmpName));
-        Log::info('Uploading complete');
+        # Upload file ONLY if it has been transcoded otherwise move to save on bandwidth if no changes are made to file
+        if ( $this->transcode ){
+            Log::info("Uploading processed file to s3://{$this->output}");
+            Storage::cloud()->writeStream($this->output, Storage::readStream($tmpName));
+            Log::info('Uploading complete');
+            Storage::cloud()->delete("/tmp/{$this->file}"); // Cleanup original tmp uploaded file
+        }else{
+            Storage::cloud()->move("/tmp/{$this->file}", $this->output);
+        }
 
-        Storage::delete($this->file); // Cleanup local file to avoid disk build up of temp files
-        Storage::cloud()->delete("/tmp/{$this->file}"); // Cleanup original tmp uploaded file
 
         if (!empty($this->notify)) {
             Log::info('POST notification to ' . $this->notify);
@@ -114,6 +118,10 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
             Log::info("POST response code {$response->status()} : {$response->body()}");
         }
 
+        # Delete local files
+        Storage::delete($this->file); // Cleanup local file to avoid disk build up of temp files
+        Storage::delete($tmpName);
+
         Log::info("TranscodeJob Completed.");
     }
 
@@ -126,6 +134,8 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
     public function getBitrate($file): bool|string
     {
         Log::info('command '. storage_path('app/check_bitrate.sh') . ' '. storage_path('app/'.$file));
-        return system(storage_path('app/check_bitrate.sh') . ' '. storage_path('app/'.$file));
+        $bitrate = system(storage_path('app/check_bitrate.sh') . ' '. storage_path('app/'.$file));
+        Log::info("{$this->file} max bitrate {$bitrate}");
+        return $bitrate;
     }
 }

@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Jobs\TranscodeJob;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
@@ -38,4 +39,32 @@ class TranscodeController extends Controller
 
         return response()->json(['ok']);
     }
+
+    /**
+     * @param Request $request
+     * @return JsonResponse
+     */
+    public function reprocess(Request $request)
+    {
+        $output = $request->input('output');
+        $validated = $request->validate([
+            'output' => [
+                'required',
+                'string',
+                function ($attribute, $value, $fail) use($output){
+                    if ( !Storage::cloud()->exists("{$output}") ){
+                        $fail("File s3://{$output} does not exist");
+                    }
+                }
+            ],
+        ]);
+        # Move output to /tmp/{filename}
+        $filename = basename($output);
+        Storage::cloud()->move($output, "/tmp/{$filename}");
+
+
+        # Run index
+        return $this->index($request);
+    }
+
 }
