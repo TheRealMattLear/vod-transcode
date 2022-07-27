@@ -103,6 +103,7 @@ class TranscodeJob implements ShouldQueue, ShouldBeUnique
             Storage::cloud()->delete("/tmp/{$this->file}"); // Cleanup original tmp uploaded file
         }else{
             Storage::cloud()->move("/tmp/{$this->file}", $this->output);
+            Storage::cloud()->setVisibility($this->output, 'public');
         }
 
 
